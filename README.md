@@ -1,6 +1,7 @@
 <h2>About</h2>
 <p>
   This is a Fork of raomin/ESPAltherma. It can be used to read data from Altherma via JSON http api instead of mqtt protocol.
+  <br /><br />
 </p>
 
 
