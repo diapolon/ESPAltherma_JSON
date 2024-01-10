@@ -5,9 +5,9 @@
   How to use:
 </p>
 <ul>
-  <li>IP:PORT/ - ESP32 infos</li>
-  <li>IP:PORT/getData - json data</li>
-  <li>IP:PORT/rebootDevice - to reboot</li>
+  <li>GET <device-ip> - ESP32 infos</li>
+  <li>GET <device-ip>/getData - json data</li>
+  <li>GET <device-ip>/rebootDevice - to reboot</li>
 </ul>
 <br /><br /><br /><br />
 
