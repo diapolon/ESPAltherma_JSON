@@ -23,6 +23,7 @@
 #include "setup.h"
 #endif
 
+#include <ESPAsyncWebServer.h> // https://github.com/me-no-dev/ESPAsyncWebServer/archive/master.zip
 #include "mqttserial.h"
 #include "converters.h"
 #include "comm.h"
@@ -32,6 +33,8 @@
 Converter converter;
 char registryIDs[32]; //Holds the registries to query
 bool busy = false;
+
+AsyncWebServer server(80);
 
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
 long LCDTimeout = 40000;//Keep screen ON for 40s then turn off. ButtonA will turn it On again.
@@ -264,6 +267,14 @@ void setupScreen(){
 #endif
 }
 
+void setupWebserver(){
+  server.on("/getData", HTTP_GET, [](AsyncWebServerRequest *request){
+    String jsonStr = String(jsonbuff);
+    Serial.println(F("application/json: Returning the current jsonData."));
+    request->send(200, "application/json", jsonStr);
+  });
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -311,6 +322,8 @@ void setup()
 
   initRegistries();
   mqttSerial.print("ESPAltherma started!");
+
+  setupWebserver();
 }
 
 void waitLoop(uint ms){
