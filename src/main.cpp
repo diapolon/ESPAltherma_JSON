@@ -258,7 +258,18 @@ void setupScreen() {
 
 void setupWebserver() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/plain", "server online");
+    char buff[MAX_MSG_SIZE] = "** v0.1 **\n\n";
+    //snprintf(buff + strlen(buff),MAX_MSG_SIZE - strlen(buff) , "\"%s\":\"%ddBm\",", "WifiRSSI", WiFi.RSSI());
+    #ifdef ARDUINO_M5Stick_C
+      //Add M5 APX values
+      snprintf(buff + strlen(buff),MAX_MSG_SIZE - strlen(buff) , "%s: %.3gV\n%s: %gmA\n", "M5VIN", M5.Axp.GetVinVoltage(),"M5AmpIn", M5.Axp.GetVinCurrent());
+      snprintf(buff + strlen(buff),MAX_MSG_SIZE - strlen(buff) , "%s: %.3gV\n%s: %gmA\n", "M5BatV", M5.Axp.GetBatVoltage(),"M5BatCur", M5.Axp.GetBatCurrent());
+      snprintf(buff + strlen(buff),MAX_MSG_SIZE - strlen(buff) , "%s: %.3gmW\n", "M5BatPwr", M5.Axp.GetBatPower());
+    #endif
+    snprintf(buff + strlen(buff),MAX_MSG_SIZE - strlen(buff) , "%s: %ddBm\n", "WifiRSSI", WiFi.RSSI());
+    snprintf(buff + strlen(buff),MAX_MSG_SIZE - strlen(buff) , "%s: %d\n", "FreeMem", ESP.getFreeHeap());
+
+    request->send(200, "text/plain", buff);
   });
 
   server.on("/rebootDevice", [](AsyncWebServerRequest *request) {
@@ -273,21 +284,13 @@ void setupWebserver() {
     #else
       strcpy(jsonbuff, "{\0");
     #endif
-    getValues();
-    #ifdef ARDUINO_M5Stick_C
-      //Add M5 APX values
-      snprintf(jsonbuff + strlen(jsonbuff),MAX_MSG_SIZE - strlen(jsonbuff) , "\"%s\":\"%.3gV\",\"%s\":\"%gmA\",", "M5VIN", M5.Axp.GetVinVoltage(),"M5AmpIn", M5.Axp.GetVinCurrent());
-      snprintf(jsonbuff + strlen(jsonbuff),MAX_MSG_SIZE - strlen(jsonbuff) , "\"%s\":\"%.3gV\",\"%s\":\"%gmA\",", "M5BatV", M5.Axp.GetBatVoltage(),"M5BatCur", M5.Axp.GetBatCurrent());
-      snprintf(jsonbuff + strlen(jsonbuff),MAX_MSG_SIZE - strlen(jsonbuff) , "\"%s\":\"%.3gmW\",", "M5BatPwr", M5.Axp.GetBatPower());
-    #endif
-    snprintf(jsonbuff + strlen(jsonbuff),MAX_MSG_SIZE - strlen(jsonbuff) , "\"%s\":\"%ddBm\",", "WifiRSSI", WiFi.RSSI());
-    snprintf(jsonbuff + strlen(jsonbuff),MAX_MSG_SIZE - strlen(jsonbuff) , "\"%s\":\"%d\",", "FreeMem", ESP.getFreeHeap());
+    getValues();    
     jsonbuff[strlen(jsonbuff) - 1] = '}';
     #ifdef JSONTABLE
       strcat(jsonbuff,"]");
     #endif          
-    String jsonStr = String(jsonbuff);        
-    request->send(200, "application/json", jsonStr);
+    //String jsonStr = String(jsonbuff);        
+    request->send(200, "application/json", jsonbuff);
   });
   server.begin();
 }
