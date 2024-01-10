@@ -10,11 +10,6 @@
 //#define WIFI_PRIMARY_DNS 8, 8, 8, 8     //optional
 //#define WIFI_SECONDARY_DNS 8, 8, 4, 4   //optional
 
-#define MQTT_SERVER "192.168.1.4"//**IP address here of your MQTT server**
-#define MQTT_USERNAME ""//leave empty if not set (bad!)
-#define MQTT_PASSWORD ""//leave empty if not set (bad!)
-#define MQTT_PORT 1883
-
 #define FREQUENCY 30000 //query values every 30 sec
 
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
@@ -47,14 +42,10 @@
 #define SG_RELAY_INACTIVE_STATE LOW
 #endif
 
-#define MAX_MSG_SIZE 7120//max size of the json message sent in mqtt 
+#define MAX_MSG_SIZE 7120//max size of the json message 
 
 //Uncomment this line if the JSON message should be in a Json Table format []. Use only for IOBroker Vis. 
 //#define JSONTABLE
-
-//Uncomment this if you want to activate the One Value <-> One Topic mode. Each value will be sent to a specific topic below 
-// #define ONEVAL_ONETOPIC
-// #define MQTT_OneTopic "espaltherma/OneATTR/" //Keep the ending "/" !!
 
 //Uncomment to disable common frequent log messages via MQTT to reduce network load
 //#define DISABLE_LOG_MESSAGES
