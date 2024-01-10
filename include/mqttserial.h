@@ -1,7 +1,6 @@
 #ifndef mqttSerial_h
 #define mqttSerial_h
 #include "Stream.h"
-#include <PubSubClient.h>
 #ifdef ARDUINO_M5Stick_C_Plus
 #include <M5StickCPlus.h>
 #elif ARDUINO_M5Stick_C
@@ -9,19 +8,10 @@
 #endif
 class MQTTSerial: public Stream
 {
-private:
-    /* data */
-    PubSubClient* _client = nullptr;
-    char _topic[64];
 public:
-    inline void begin(PubSubClient* client,const char* topic){
-    _client=client;
-    strcpy(_topic,topic);
-    };
-
     inline size_t write(uint8_t){return 0;};
     size_t write(const uint8_t *buffer, size_t size);
-    inline int available(void){return _client->connected();};
+    inline int available(void){return true;};
     inline int availableForWrite(void){return 0;};
     inline int peek(void){return 0;};
     inline int read(void){return 0;};
@@ -66,10 +56,7 @@ size_t MQTTSerial::write(const uint8_t *buffer, size_t size)
     }
     M5.Lcd.print((const char*) buffer);
 #endif
-#ifndef DISABLE_LOG_MESSAGES
-    if (WiFi.status() == WL_CONNECTED && _client!=nullptr &&_client->connected()){
-        _client->publish(_topic,buffer,size);
-    }
+#ifndef DISABLE_LOG_MESSAGES    
     Serial.write(buffer,size);
 #endif
     return size;
