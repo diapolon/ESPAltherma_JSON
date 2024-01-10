@@ -3,8 +3,7 @@
 #endif
 #define LABELDEF
 
-class LabelDef
-{
+class LabelDef {
 public:
     int convid;
     int offset;
