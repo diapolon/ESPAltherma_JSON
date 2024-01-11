@@ -1,4 +1,4 @@
-<h2>About</h2>
+## About
 <p>
   This is a Fork of raomin/ESPAltherma. 
 </p>
@@ -6,8 +6,8 @@
   <br /><br />
   How to use:
 </p>
-<ul>
-  <li>GET <device-ip> - ESP32 infos</li>
+<ul style="list-style-position: inside;">
+  <li>GET <device-ip>/ - ESP32 infos</li>
   <li>GET <device-ip>/getData - json data</li>
   <li>GET <device-ip>/rebootDevice - to reboot</li>
 </ul>
