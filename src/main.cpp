@@ -1,33 +1,39 @@
 #ifdef ARDUINO_M5Stick_C_Plus
-#include <M5StickCPlus.h>
+  #include <M5StickCPlus.h>
 #elif ARDUINO_M5Stick_C
-#include <M5StickC.h>
+  #include <M5StickC.h>
 #else
-#include <Arduino.h>
+  #include <Arduino.h>
 #endif
 
 #ifdef ARDUINO_ARCH_ESP8266
-#include <SoftwareSerial.h>
-#include <ESP8266WiFi.h>
+  #include <SoftwareSerial.h>
+  #include <ESP8266WiFi.h>
 #else
-#include <WiFi.h>
+  #include <WiFi.h>
 #endif
-#include <HardwareSerial.h>
 
+#include <HardwareSerial.h>
 #include <ArduinoOTA.h>
 
 #if __has_include("my_setup.h")
-#include "my_setup.h"
+  #include "my_setup.h"
 #else
-#include "setup.h"
+  #include "setup.h"
 #endif
 
 #include <ESPAsyncWebServer.h> // https://github.com/me-no-dev/ESPAsyncWebServer/archive/master.zip
-#include "mqttserial.h"
+#include "debugserial.h"
 #include "converters.h"
 #include "comm.h"
-#include "mqtt.h"
+#include "commands.h"
 #include "restart.h"
+
+#ifdef JSONTABLE
+  char jsonbuff[MAX_MSG_SIZE] = "[{\0";
+#else
+  char jsonbuff[MAX_MSG_SIZE] = "{\0";
+#endif
 
 Converter converter;
 char registryIDs[32]; //Holds the registries to query
@@ -36,7 +42,7 @@ bool busy = false;
 AsyncWebServer server(80);
 
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
-long LCDTimeout = 40000;//Keep screen ON for 40s then turn off. ButtonA will turn it On again.
+  long LCDTimeout = 40000;//Keep screen ON for 40s then turn off. ButtonA will turn it On again.
 #endif
 
 bool contains(char array[], int size, int value) {
@@ -108,7 +114,7 @@ void getValues() {
     if (registryIDs[i] == receivedRegistryID) {
       //if replied registerID is coherent with the command    
       converter.readRegistryValues(buff, PROTOCOL); //process all values from the register
-      updateValues(registryIDs[i]);       //send them in mqtt
+      updateValues(registryIDs[i]);       //send them to buffer
       //waitLoop(500);//wait .5sec between registries
     }
   }
@@ -173,7 +179,7 @@ void checkWifi() {
 void setup_wifi() {
   delay(10);
   // We start by connecting to a WiFi network
-  mqttSerial.printf("Connecting to %s\n", WIFI_SSID);
+  debugSerial.printf("Connecting to %s\n", WIFI_SSID);
 
   #if defined(WIFI_IP) && defined(WIFI_GATEWAY) && defined(WIFI_SUBNET)
     IPAddress local_IP(WIFI_IP);
@@ -193,7 +199,7 @@ void setup_wifi() {
     #endif
 
     if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
-      mqttSerial.println("Failed to set static ip!");
+      debugSerial.println("Failed to set static ip!");
     }
   #endif
 
@@ -212,7 +218,7 @@ void setup_wifi() {
     WiFi.begin(WIFI_SSID, WIFI_PWD, 0, 0, true);
   }
   checkWifi();
-  mqttSerial.printf("Connected. IP Address: %s\n", WiFi.localIP().toString().c_str());
+  debugSerial.printf("Connected. IP Address: %s\n", WiFi.localIP().toString().c_str());
 }
 
 void initRegistries() {
@@ -224,12 +230,12 @@ void initRegistries() {
   int i = 0;
   for (auto &&label : labelDefs) {
     if (!contains(registryIDs, sizeof(registryIDs), label.registryID)) {
-      mqttSerial.printf("Adding registry 0x%2x to be queried.\n", label.registryID);
+      debugSerial.printf("Adding registry 0x%2x to be queried.\n", label.registryID);
       registryIDs[i++] = label.registryID;
     }
   }
   if (i == 0) {
-    mqttSerial.printf("ERROR - No values selected in the include file. Stopping.\n");
+    debugSerial.printf("ERROR - No values selected in the include file. Stopping.\n");
     while (true) {
       extraLoop();
     }
@@ -258,8 +264,7 @@ void setupScreen() {
 
 void setupWebserver() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    char buff[MAX_MSG_SIZE] = "** v0.1 **\n\n";
-    //snprintf(buff + strlen(buff),MAX_MSG_SIZE - strlen(buff) , "\"%s\":\"%ddBm\",", "WifiRSSI", WiFi.RSSI());
+    char buff[MAX_MSG_SIZE] = "** v0.1.2 **\n\n";
     #ifdef ARDUINO_M5Stick_C
       //Add M5 APX values
       snprintf(buff + strlen(buff),MAX_MSG_SIZE - strlen(buff) , "%s: %.3gV\n%s: %gmA\n", "M5VIN", M5.Axp.GetVinVoltage(),"M5AmpIn", M5.Axp.GetVinCurrent());
@@ -317,7 +322,7 @@ void setup() {
 
   EEPROM.begin(10);
   readEEPROM();//Restore previous state
-  mqttSerial.print("Setting up wifi...");
+  debugSerial.print("Setting up wifi...");
   setup_wifi();
   
   ArduinoOTA.setHostname("ESPAltherma");
@@ -325,18 +330,20 @@ void setup() {
     busy = true;
   });
   ArduinoOTA.onError([](ota_error_t error) {
-    mqttSerial.print("Error on OTA - restarting");
+    debugSerial.print("Error on OTA - restarting");
     restart_board();
   });
   ArduinoOTA.begin();
 
-  mqttSerial.print("Connecting to MQTT server...");
-  mqttSerial.println("OK!");
+  debugSerial.println("OK!");
 
   initRegistries();
-  mqttSerial.print("ESPAltherma started!");
-
+  
+  debugSerial.println("Setting up webserver");
+  
   setupWebserver();
+
+  debugSerial.print("ESPAltherma started!");
 }
 
 
@@ -347,6 +354,6 @@ void loop() {
     checkWifi();
   }
   
-  mqttSerial.printf("Done. Waiting %ld ms...", FREQUENCY - millis() + start);
+  debugSerial.printf("Done. Waiting %ld ms...", FREQUENCY - millis() + start);
   waitLoop(FREQUENCY - millis() + start);
 }
