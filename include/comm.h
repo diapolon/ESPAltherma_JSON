@@ -1,15 +1,16 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 #ifdef ARDUINO_ARCH_ESP8266
-#include <SoftwareSerial.h>
-SoftwareSerial MySerial;
-#define SERIAL_CONFIG (SWSERIAL_8E1)
-#define SERIAL_FLUSH_TX_ONLY // empty, as SoftwareSerial.flush() takes no parameter
+  #include <SoftwareSerial.h>
+  SoftwareSerial MySerial;
+  #define SERIAL_CONFIG (SWSERIAL_8E1)
+  #define SERIAL_FLUSH_TX_ONLY // empty, as SoftwareSerial.flush() takes no parameter
 #else
-HardwareSerial MySerial(1);
-#define SERIAL_CONFIG (SERIAL_8E1)
-#define SERIAL_FLUSH_TX_ONLY false
+  HardwareSerial MySerial(1);
+  #define SERIAL_CONFIG (SERIAL_8E1)
+  #define SERIAL_FLUSH_TX_ONLY false
 #endif
+
 #define SER_TIMEOUT 300 //leave 300ms for the machine to answer
 
 unsigned char getCRC(unsigned char *src, int len) {
@@ -25,10 +26,10 @@ void logBuffer(unsigned char *buffer, size_t len) {
   for (size_t i = 0; i < len; i++) {
     sprintf(bufflog + i * 5, "0x%02x ", buffer[i]);
   }
-  mqttSerial.print(bufflog);
+  debugSerial.print(bufflog);
 }
 
-int get_reply_len(char regID, char protocol='I') {
+int get_reply_len(char regID, char protocol = 'I') {
   if (protocol == 'I') {
     // Backward compatible behavior. Actual length is dynamic and returned
     // on 3rd byte of the response.
@@ -49,7 +50,7 @@ int get_reply_len(char regID, char protocol='I') {
   }
 }
 
-bool queryRegistry(char regID, unsigned char *buffer, char protocol='I') {
+bool queryRegistry(char regID, unsigned char *buffer, char protocol = 'I') {
   //preparing command:
   unsigned char prep[] = {0x03, 0x40, regID, 0x00};
   prep[3] = getCRC(prep, 3);
@@ -63,7 +64,7 @@ bool queryRegistry(char regID, unsigned char *buffer, char protocol='I') {
     queryLength = 3;
   }
 
-  mqttSerial.printf("Querying register 0x%02x... ", regID);
+  debugSerial.printf("Querying register 0x%02x... ", regID);
   //Sending command to serial
   MySerial.flush(SERIAL_FLUSH_TX_ONLY); //Prevent possible pending info on the read
   MySerial.write((uint8_t*) prep, queryLength);
@@ -82,7 +83,7 @@ bool queryRegistry(char regID, unsigned char *buffer, char protocol='I') {
       // Error reply common to both protocols
       if (len == 2 && buffer[0] == 0x15 && buffer[1] == 0xea) {
         // HP didn't understand the command
-        mqttSerial.printf("Error 0x15 0xEA returned from HP\n");
+        debugSerial.printf("Error 0x15 0xEA returned from HP\n");
         delay(500);
         return false;
       }
@@ -90,9 +91,9 @@ bool queryRegistry(char regID, unsigned char *buffer, char protocol='I') {
   }
   if (millis() >= (start + SER_TIMEOUT)) {
     if (len == 0) {
-      mqttSerial.printf("Time out! Check connection\n");
+      debugSerial.printf("Time out! Check connection\n");
     } else {
-      mqttSerial.printf("ERR: Time out on register 0x%02x! got %d/%d bytes\n", regID, len, replyLen);
+      debugSerial.printf("ERR: Time out on register 0x%02x! got %d/%d bytes\n", regID, len, replyLen);
       logBuffer(buffer, len);
     }
     delay(500);
@@ -100,7 +101,7 @@ bool queryRegistry(char regID, unsigned char *buffer, char protocol='I') {
   }
   logBuffer(buffer, len);
   if (getCRC(buffer, len - 1) != buffer[len - 1]) {
-    mqttSerial.printf("ERROR: Wrong CRC on register 0x%02x. Calculated 0x%2x but got 0x%2x\nBuffer: ",regID, getCRC(buffer, len - 1), buffer[len - 1]);
+    debugSerial.printf("ERROR: Wrong CRC on register 0x%02x. Calculated 0x%2x but got 0x%2x\nBuffer: ", regID, getCRC(buffer, len - 1), buffer[len - 1]);
     logBuffer(buffer,len);
     return false;
   } else {
