@@ -4,6 +4,7 @@
 </p>
 <p>It can be used to read data from Altherma via JSON http api instead of mqtt protocol.
   <br /><br />
+  Version 0.1.2
   How to use:
 </p>
 <ul style="list-style-position: inside;">
