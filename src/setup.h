@@ -7,8 +7,8 @@
 //#define WIFI_IP 192, 168, 0, 5
 //#define WIFI_SUBNET 255, 255, 255, 0
 //#define WIFI_GATEWAY 192, 168, 0, 1
-//#define WIFI_PRIMARY_DNS 8, 8, 8, 8     //optional
-//#define WIFI_SECONDARY_DNS 8, 8, 4, 4   //optional
+#define WIFI_PRIMARY_DNS 8, 8, 8, 8     //A DNS address is needed, even if it's not used 
+#define WIFI_SECONDARY_DNS 8, 8, 4, 4   //A DNS address is needed, even if it's not used
 
 #define FREQUENCY 30000 //query values every 30 sec
 
