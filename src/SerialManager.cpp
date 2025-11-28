@@ -1,49 +1,63 @@
 #include "SerialManager.h"
-#include "config.h"
 
-
-HardwareSerial hwSerial(DAIGIN_UART_NUM);
-
-
-SerialManager::SerialManager() {}
-
-
-void SerialManager::begin() {
-hwSerial.begin(DAIGIN_BAUD, SERIAL_8E1, DAIGIN_RX_PIN, DAIGIN_TX_PIN);
+SerialManager& SerialManager::instance() {
+    static SerialManager inst;
+    return inst;
 }
 
-
-size_t SerialManager::available() {
-return hwSerial.available();
+void SerialManager::begin(HardwareSerial& port, unsigned long baud) {
+    serial = &port;
+    // MODE: 8E1 come richiesto dal protocollo Daikin (se serve diverso, cambia)
+    serial->begin(baud, SERIAL_8E1);
 }
 
-
-int SerialManager::read(uint8_t* buf, size_t len) {
-size_t r = 0;
-unsigned long start = millis();
-while (r < len && (millis() - start) < SERIAL_READ_TIMEOUT_MS) {
-if (hwSerial.available()) {
-buf[r++] = hwSerial.read();
-}
-}
-return r;
+void SerialManager::write(const uint8_t* data, size_t len) {
+    if (serial) serial->write(data, len);
 }
 
+void SerialManager::loop() {
+    if (!serial) return;
 
-int SerialManager::readByte() {
-unsigned long start = millis();
-while ((millis() - start) < SERIAL_READ_TIMEOUT_MS) {
-if (hwSerial.available()) return hwSerial.read();
-}
-return -1;
-}
+    // buffer locale per ricostruire frame
+    static uint8_t buffer[256];
+    static size_t idx = 0;
+    static uint32_t lastByteMillis = 0;
 
+    while (serial->available()) {
+        uint8_t b = (uint8_t)serial->read();
+        lastByteMillis = millis();
 
-void SerialManager::write(const uint8_t* buf, size_t len) {
-hwSerial.write(buf, len);
-}
+        // Se siamo all'inizio del pacchetto, accettiamo solo header validi (0x02 o 0x03)
+        if (idx == 0) {
+            if (b != 0x02 && b != 0x03) {
+                // ignora byte spurio
+                continue;
+            }
+        }
+        buffer[idx++] = b;
 
+        // protezione overflow
+        if (idx >= sizeof(buffer)) {
+            idx = 0;
+            // se vuoi loggare: Serial.println("Buffer overflow, resetted");
+            return;
+        }
 
-void SerialManager::flushTx() {
-hwSerial.flush();
+        // Se protocollo I: il terzo byte (index 2) contiene la lunghezza utile
+        if (idx >= 3 && (buffer[0] == 0x03 || buffer[0] == 0x02)) {
+            uint8_t expectedLen = (uint8_t)buffer[2] + 2; // come da doc
+            if (idx == expectedLen) {
+                // frame completo: chiamiamo callback
+                if (callback) callback(buffer, idx);
+                idx = 0;
+                return;
+            }
+        }
+        // Per protocollo S potresti voler controllare un terminatore specifico (non implementato qui)
+    }
+
+    // Timeout: se abbiamo bytes parziali e non arrivano nuovi byte per troppo tempo, reset
+    if (idx > 0 && (millis() - lastByteMillis) > 80) {
+        idx = 0;
+    }
 }

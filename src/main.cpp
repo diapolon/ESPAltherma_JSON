@@ -1,56 +1,35 @@
 #include <Arduino.h>
-#include "config.h"
+#include "SerialManager.h"
 #include "DaikinProtocol.h"
-#include "JsonBuilder.h"
-#include "WebServerManager.h"
 
+// usa UART1: modifica se necessario
+HardwareSerial MySerial(1);
 
-static DaikinProtocol daikin;
-static JsonBuilder jsonBuilder;
-static WebServerManager webServer;
-
-
-static uint8_t replyBuf[128];
-static String latestJson = "{}";
-
-
-String provideData() {
-return latestJson;
-}
-
+DaikinProtocol* daikinPtr = nullptr;
 
 void setup() {
-Serial.begin(115200);
-DBG_PRINTF("Starting ESPAltherma_JSON optimized build\n");
+    Serial.begin(115200);
+    delay(100);
 
+    // inizializza SerialManager singleton
+    auto& sm = SerialManager::instance();
+    sm.begin(MySerial, 9600);
 
-daikin.begin();
-webServer.setDataProvider(provideData);
-webServer.begin();
+    // crea e inizializza protocol handler
+    static DaikinProtocol daikin(sm);
+    daikinPtr = &daikin;
+    daikin.begin();
 
-
-// create a FreeRTOS task to poll registers periodically
-xTaskCreate([](void *){
-const TickType_t delayTicks = pdMS_TO_TICKS(QUERY_INTERVAL_MS);
-for (;;) {
-size_t outLen = 0;
-bool ok = daikin.queryRegister(0x50, replyBuf, outLen, 'I');
-if (ok) {
-String s;
-if (jsonBuilder.buildFromDaikin(replyBuf, outLen, s)) {
-latestJson = s;
-DBG_PRINTF("Got JSON: %s\n", latestJson.c_str());
+    Serial.println("Setup completato");
 }
-} else {
-DBG_PRINTF("Query failed\n");
-}
-vTaskDelay(delayTicks);
-}
-}, "DaikinPoll", 4 * 1024, nullptr, 1, nullptr);
-}
-
 
 void loop() {
-// main loop left empty; work happens in tasks
-delay(1000);
+    // ciclo principale: processa la seriale
+    SerialManager::instance().loop();
+
+    // puoi chiamare eventuale loop del protocollo
+    if (daikinPtr) daikinPtr->loop();
+
+    // piccolo delay per non saturare la CPU; se hai FreeRTOS non necessario
+    delay(1);
 }
