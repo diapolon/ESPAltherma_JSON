@@ -1,16 +1,11 @@
 #include "WebServerManager.h"
-#include "config.h"
-
 
 #include <WiFi.h>
-#ifdef ASYNCWEB_ENABLED
+
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#endif
-
 
 static String (*dataProvider)() = nullptr;
-
 
 WebServerManager::WebServerManager() {}
 
@@ -27,7 +22,7 @@ WiFi.mode(WIFI_STA);
 WiFi.begin();
 
 
-DBG_PRINTF("Connecting WiFi...\n");
+Serial.print("Connecting WiFi...\n");
 unsigned long start = millis();
 while (WiFi.status() != WL_CONNECTED && millis() - start < 10000) delay(200);
 
@@ -48,8 +43,8 @@ req->send(200, "application/json", payload);
 
 server.onNotFound([](AsyncWebServerRequest* req){ req->send(404); });
 server.begin();
-DBG_PRINTF("HTTP server started on port %d\n", HTTP_PORT);
+Serial.print("HTTP server started on port %d\n", HTTP_PORT);
 #else
-DBG_PRINTF("Async webserver not enabled at compile time\n");
+Serial.print("Async webserver not enabled at compile time\n");
 #endif
 }

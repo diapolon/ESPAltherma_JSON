@@ -1,20 +1,45 @@
 #include "JsonBuilder.h"
-#include "config.h"
+#include <map>
+#include <vector>
 
-bool JsonBuilder::buildFromDaikin(const uint8_t* data, size_t len, String& outJson){
-    if(!data || len<3) return false;
+bool JsonBuilder::buildFromDaikinMap(const std::map<uint8_t,std::vector<uint8_t>>& regData, String& outJson) {
+    if(regData.empty()) return false;
 
     JsonDocument doc;
-    JsonArray arr = doc["raw"].to<JsonArray>();
-    for(size_t i=0;i<len;i++) arr.add(data[i]);
+    JsonObject regs = doc["registers"].to<JsonObject>();
 
-    // esempio mappatura
-    if(len>=6){
-        uint16_t tempRaw = (uint16_t)data[3]<<8 | data[4];
-        doc["temperature"] = tempRaw/10.0f;
+    for(const auto& kv : regData){
+        uint8_t reg = kv.first;
+        const std::vector<uint8_t>& buf = kv.second;
+        
+        JsonArray arr = regs[String(reg)].to<JsonArray>();        
+        for(auto b : buf) arr.add(b);
+
+        // Decodifica automatica dei registri principali
+        switch(reg){
+            case 0x50: // Temperatura
+                if(buf.size() >= 6){
+                    uint16_t tempRaw = (uint16_t)buf[3]<<8 | buf[4];
+                    regs["temperature"] = tempRaw / 10.0f;
+                }
+                break;
+            case 0x56: // Modalità
+                if(buf.size() >= 6) regs["mode"] = buf[3];
+                break;
+            case 0x5A: // Ventola
+                if(buf.size() >= 6) regs["fan"] = buf[3];
+                break;
+            case 0x5C: // Potenza
+                if(buf.size() >= 6){
+                    uint16_t power = (uint16_t)buf[3]<<8 | buf[4];
+                    regs["power"] = power;
+                }
+                break;
+                // Aggiungere altri registri da decodificare qui
+            default:
+                break;
+        }        
     }
-
-    doc["len"] = (int)len;
 
     serializeJson(doc, outJson);
     return true;
