@@ -1,13 +1,16 @@
 #pragma once
+#include "SerialManager.h"
 #include <Arduino.h>
-
-class SerialManager;
 
 class DaikinProtocol {
 public:
-    explicit DaikinProtocol(class SerialManager& sm);
+    explicit DaikinProtocol(SerialManager& sm);
+
     void begin();
     void loop();
+
+    // Query singolo registro, restituisce true se riceve dati validi
+    bool queryRegister(uint8_t regID, uint8_t* outBuffer, size_t& outLen, char protocol = 'I');
 
 private:
     SerialManager& serialMgr;
