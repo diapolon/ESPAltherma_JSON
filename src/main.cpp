@@ -15,7 +15,6 @@
 #include <M5StickC.h>
 #endif
 
-
 #ifdef ESP32_S3_TERMINAL
 #include <LovyanGFX.hpp>
 class LGFX_ESP32_S3_Terminal : public LGFX_Device {

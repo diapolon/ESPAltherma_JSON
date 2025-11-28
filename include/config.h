@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION     "v1.00.2"
+#define VERSION     "v1.00.3"
 
 // ===== Parametri WiFi =====
 #define WIFI_SSID     "YOUR_SSID"
@@ -20,8 +20,8 @@
 
 
 #ifdef ESP32_S3_TERMINAL
-#define SERIAL_RX_PIN 18
-#define SERIAL_TX_PIN 19
+#define SERIAL_RX_PIN 43
+#define SERIAL_TX_PIN 44
 #define DISPLAY_ROTATION 1
 #define DISPLAY_DB0 2
 #define DISPLAY_DB1 3
