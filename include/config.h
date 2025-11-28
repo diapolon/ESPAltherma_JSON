@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION     "v1.00.1"
+#define VERSION     "v1.00.2"
 
 // ===== Parametri WiFi =====
 #define WIFI_SSID     "YOUR_SSID"
