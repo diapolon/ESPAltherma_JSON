@@ -7,7 +7,7 @@ This is a full rewrite of the ESPAltherma_JSON project, structured for PlatformI
 Key features:
 - modular code (SerialManager, DaikinProtocol, JsonBuilder, WebServerManager)
 - FreeRTOS task for periodic polling
-- ArduinoJson (StaticJsonDocument) for low-memory JSON
+- ArduinoJson for low-memory JSON
 - AsyncWebServer endpoint `/getData` returning the latest JSON snapshot
 
 
