@@ -12,10 +12,9 @@ HardwareSerial DaikinSerial(SERIAL_PORT);
 char registryIDs[32]; //Holds the registries to query
 
 Converters converter;
-bool busy = false;
 
 JsonDocument jsonData;
-String outJson;    
+String outJson = "{ \"error\": \"1\" }";    
 
 void initSerial() {  
   DaikinSerial.begin(9600, SERIAL_8E1, SERIAL_RX_PIN, SERIAL_TX_PIN);
@@ -124,13 +123,14 @@ void updateValues(char regID) {
         break;
       }
     }
-    jsonData[labels[i]->label] = labels[i]->asString;
+    String value = labels[i]->asString;
+    value.trim();
+    jsonData[labels[i]->label] = value;
   }
 }
 
-void getValues() {
-    //jsonData.clear();    
-    jsonData["time"] = millis();
+void getValues() {    
+  jsonData["time"] = millis();
   //Querying all registries
   for (size_t i = 0; (i < 32) && registryIDs[i] != 0xFF; i++) {
     unsigned char buff[64] = {0};
@@ -164,10 +164,13 @@ void initRegistries() {
   }
   if (i == 0) {
     debugSerial.printf("ERROR - No values selected in the include file. Stopping.\n");
-    while (true) {
-      extraLoop();
+    while (true) {      
     }
   }
+}
+
+void readSerialAndBuildJson() {
+  getValues();
 }
 
 #endif // SerialManager_h

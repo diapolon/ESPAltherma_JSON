@@ -7,14 +7,18 @@ int x_center = 0;
 int y_center = 0;
 
 void updateScreenInfos(String text) {   
-    /*if (M5.Lcd.getCursorY()+13>M5.Lcd.height()) {
+    if (M5.Lcd.getCursorY()+13>M5.Lcd.height()) {
         M5.Lcd.fillScreen(TFT_BLACK);
         M5.Lcd.setCursor(0,0);
-    }*/
+    }
     M5.Lcd.drawString(text, 0, 0);    
 }    
 
 void updateScreenMainText(String text) {        
+    if (M5.Lcd.getCursorY()+13>M5.Lcd.height()) {
+        M5.Lcd.fillScreen(TFT_BLACK);
+        M5.Lcd.setCursor(0,0);
+    }
     M5.Lcd.drawString(text, x_center, y_center);    
 }
 
@@ -38,9 +42,9 @@ void initDisplay() {
     M5.Lcd.setRotation(1);
     M5.Lcd.setBrightness(127);    
     M5.Lcd.fillScreen(TFT_BLACK);
-    M5.Lcd.setFont(&FreeSansBold12pt7b);
+    //M5.Lcd.setFont(&FreeSansBold12pt7b);
     M5.Lcd.setTextDatum(MC_DATUM);
-    M5.Lcd.setTextFont(1);
+    M5.Lcd.setTextFont(2);
     M5.Lcd.setTextColor(TFT_WHITE);
 
     //M5.Display.wakeup();

@@ -4,7 +4,7 @@
 #define LGFX_USE_V1
 #include <LovyanGFX.hpp>
 
-#define SERIAL_PORT   0
+#define SERIAL_PORT   2
 
 #define SERIAL_TX_PIN 43
 #define SERIAL_RX_PIN 44

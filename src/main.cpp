@@ -16,11 +16,6 @@ void initTasks() {
     xTaskCreate(displayTask, "displayTask", 4000, NULL, tskIDLE_PRIORITY, NULL);        
 }
 
-void updateDisplay() {    
-    String msg = "";
-    if (msg != "") updateScreenMainText(msg);     
-}
-
 void setup() {
     Serial.begin(115200);
     delay(100);
@@ -42,15 +37,16 @@ void setup() {
 
     initWebServer(); 
     delay(100);          
-
     
 }
 
-void loop() {  
-    unsigned long start = millis();    
-    loopWifi();  
-    loopWebServer();
-    unsigned long wait = DAIKIN_QUERY_INTERVAL - millis() + start;
-    debugSerial.printf("Done. Waiting ", String(wait));
-    waitLoop(wait);
+void loop() {      
+    unsigned long now = millis();
+    loopWifi();      
+    if (now - lastRead >= interval) {
+        lastRead = now;
+        readSerialAndBuildJson();
+    }    
+    ElegantOTA.loop();    
+    delay(100);
 }

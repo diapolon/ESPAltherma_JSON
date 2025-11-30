@@ -36,11 +36,11 @@
     DebugSerial::DebugSerial() { }
 
     size_t DebugSerial::write(const uint8_t *buffer, size_t size) {    
-        //if (DEBUG) Serial.write(buffer, size);                
-        String out;
-        out.reserve(size);
-        out.concat((const char*)buffer, size);
-        updateScreenMainText(out);
+        if (DEBUG) Serial.write(buffer, size);                
+        //String out;
+        //out.reserve(size);
+        //out.concat((const char*)buffer, size);
+        //updateScreenMainText(out);
         return size;
     }
 

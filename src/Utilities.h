@@ -21,15 +21,11 @@ void restartBoard() {
     ESP.restart();
 }
 
-void extraLoop() {
-    //update display?
-}
-
 void waitLoop(uint ms) {
   unsigned long start = millis();
   while (millis() < start + ms) {
     //wait .5sec between registries  
-    extraLoop();
+    
   }
 }
 
