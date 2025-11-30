@@ -16,6 +16,21 @@ void initWifi() {
     updateScreenInfos(WiFi.localIP().toString());
 }
 
+void loopWifi() {
+    if (WiFi.status() != WL_CONNECTED) { 
+    //restart board if needed
+        int i = 0;
+        while (WiFi.status() != WL_CONNECTED) {
+            delay(500);
+            Serial.print(".");
+            if (i++ == 120) {
+            updateScreenMainText("Tried connecting for 60 sec, rebooting now.");
+            restartBoard();
+            }
+        }
+    }
+}
+
 void handleRoot() {
     String html = "<html><head><title>Daikin Altherma ESP32</title></head><body>";
     html += "<h1>Daikin Altherma ESP32</h1>";
@@ -24,14 +39,26 @@ void handleRoot() {
     server.send(200, "text/html", html);
 }
 
-void handleJson() {    
-    getValues();        
+void handleGetData() {    
+    getValues();  
+    delay(100);      
     server.send(200, "application/json", outJson);    
+}
+
+void handleRebootDevice() {    
+    String html = "<html><head><title>Daikin Altherma ESP32</title></head><body>";
+    html += "<h1>Daikin Altherma ESP32</h1>";
+    html += "<p>Reboot in 2 sec</p>";
+    html += "</body></html>";
+    server.send(200, "text/html", html);
+    delay(2000);
+    restartBoard();
 }
 
 void initWebServer() {
     server.on("/", handleRoot);
-    server.on("/getData", handleJson);
+    server.on("/getData", handleGetData);
+    server.on("/rebootDevice", handleRebootDevice);
     server.begin();
 }
 

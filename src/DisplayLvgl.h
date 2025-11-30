@@ -1,9 +1,10 @@
-#ifndef Display_h
-#define Display_h
+#ifndef DisplayLvgl_h
+#define DisplayLvgl_h
 
 #include <lvgl.h>
 extern "C" {
-   #include <ui.h>
+    #include "../lvgl/screens/ui_screen.c"
+    #include "../lvgl/ui.c"
 }
 
 LGFX display;
@@ -95,4 +96,4 @@ void displayTask(void *pvParameters) {
     }
 }
   
-#endif // Display_h
+#endif // DisplayLvgl_h

@@ -1,14 +1,13 @@
-#ifndef Display_driver_h
-#define Display_driver_h
+#ifndef Driver_h
+#define Driver_h
 
-#define HARDWARE "elecrow_3.5_1"
+#define LGFX_USE_V1
+#include <LovyanGFX.hpp>
 
 #define SERIAL_PORT   0
 
 #define SERIAL_TX_PIN 43
 #define SERIAL_RX_PIN 44
-
-#define BUZZER_GPIO 20
 
 #define GFX_BL 46
 
@@ -76,4 +75,4 @@ class LGFX : public lgfx::LGFX_Device {
     }
 };
 
-#endif // Display_driver_h
+#endif // Driver_h

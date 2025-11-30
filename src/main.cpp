@@ -1,12 +1,13 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#define LGFX_USE_V1
-#include <LovyanGFX.hpp>
 #include <Globals.h>
 #include <Utilities.h>
-
-#include <Display_driver.h>
-#include <Display.h>
+#include <Driver.h>
+#ifdef LGFX_USE_V1
+    #include <DisplayLvgl.h>
+#else
+    #include <DisplayM5.h>
+#endif
 #include <DebugSerial.h>
 #include <SerialManager.h>
 #include <WebServerManager.h>
@@ -46,7 +47,8 @@ void setup() {
 }
 
 void loop() {  
-    unsigned long start = millis();      
+    unsigned long start = millis();    
+    loopWifi();  
     loopWebServer();
     unsigned long wait = DAIKIN_QUERY_INTERVAL - millis() + start;
     debugSerial.printf("Done. Waiting ", String(wait));

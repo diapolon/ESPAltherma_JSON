@@ -17,6 +17,10 @@ unsigned char getCRC(unsigned char *src, int len) {
   return ~b;
 }
 
+void restartBoard() {
+    ESP.restart();
+}
+
 void extraLoop() {
     //update display?
 }
