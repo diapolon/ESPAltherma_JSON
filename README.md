@@ -2,7 +2,11 @@
 
 
 This is a full rewrite of the ESPAltherma project, structured for PlatformIO and ESP32.
+It support only Esp32-S3 elecrow
 
+
+ToDo:
+- Show on display readed values
 
 Key features:
 - modular code (SerialManager, SerialManager, WebServerManager)

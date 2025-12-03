@@ -1,7 +1,7 @@
 #ifndef Globals_h
 #define Globals_h
 
-#define FIRMWARE_VERSION    "v1.00.04"
+#define FIRMWARE_VERSION    "v1.00.05"
 
 #define DEBUG               true
 

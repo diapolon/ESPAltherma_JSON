@@ -3,11 +3,7 @@
 #include <Globals.h>
 #include <Utilities.h>
 #include <Driver.h>
-#ifdef LGFX_USE_V1
-    #include <DisplayLvgl.h>
-#else
-    #include <DisplayM5.h>
-#endif
+#include <DisplayLvgl.h>
 #include <DebugSerial.h>
 #include <SerialManager.h>
 #include <WebServerManager.h>
